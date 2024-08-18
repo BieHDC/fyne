@@ -297,6 +297,9 @@ type baseTabsRenderer struct {
 	divider, indicator *canvas.Rectangle
 
 	tabs baseTabs
+
+	// fixme: new feature
+	hideTabs bool
 }
 
 func (r *baseTabsRenderer) Destroy() {
@@ -323,6 +326,28 @@ func (r *baseTabsRenderer) layout(t baseTabs, size fyne.Size) {
 		barPos, dividerPos, contentPos    fyne.Position
 		barSize, dividerSize, contentSize fyne.Size
 	)
+
+	if r.hideTabs {
+		// fixme: new feature
+		// hide the stuff
+		r.bar.Hide()
+		r.divider.Hide()
+		// business as usual
+		selected := t.selected()
+		for i, ti := range t.items() {
+			if i == selected {
+				// fixme do we still need the padding somewhere?
+				ti.Content.Move(fyne.NewPos(0, 0))
+				ti.Content.Resize(size)
+				ti.Content.Show()
+			} else {
+				ti.Content.Hide()
+			}
+		}
+
+		// we are done here
+		return
+	}
 
 	barMin := r.bar.MinSize()
 

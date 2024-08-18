@@ -26,3 +26,7 @@
 //		w.ShowAndRun()
 //	}
 package fyne // import "fyne.io/fyne/v2"
+
+func EnsureCustom() {
+	println("USING CUSTOM FYNE")
+}

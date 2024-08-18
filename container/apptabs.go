@@ -31,6 +31,9 @@ type AppTabs struct {
 	isTransitioning bool
 
 	popUpMenu *widget.PopUpMenu
+
+	// fixme: new feature
+	hideTabs bool
 }
 
 // NewAppTabs creates a new tab container that allows the user to choose between different areas of an app.
@@ -38,6 +41,17 @@ type AppTabs struct {
 // Since: 1.4
 func NewAppTabs(items ...*TabItem) *AppTabs {
 	tabs := &AppTabs{}
+	tabs.BaseWidget.ExtendBaseWidget(tabs)
+	tabs.SetItems(items)
+	return tabs
+}
+
+// fixme: new feature
+// we need to hide the tabs at the very start, because the
+// CreateRenderer triggers very early.
+func NewAppTabs2(hideTabs bool, items ...*TabItem) *AppTabs {
+	tabs := &AppTabs{}
+	tabs.hideTabs = hideTabs
 	tabs.BaseWidget.ExtendBaseWidget(tabs)
 	tabs.SetItems(items)
 	return tabs
@@ -51,11 +65,17 @@ func (t *AppTabs) CreateRenderer() fyne.WidgetRenderer {
 	th := t.Theme()
 	v := fyne.CurrentApp().Settings().ThemeVariant()
 
+	if t.hideTabs == false {
+		// in this dev env we only ever want to see hideTabs being true
+		println("if you see this then CreateRenderer fired before setting hideTabs")
+	}
+
 	r := &appTabsRenderer{
 		baseTabsRenderer: baseTabsRenderer{
 			bar:       &fyne.Container{},
 			divider:   canvas.NewRectangle(th.Color(theme.ColorNameShadow, v)),
 			indicator: canvas.NewRectangle(th.Color(theme.ColorNamePrimary, v)),
+			hideTabs:  t.hideTabs,
 		},
 		appTabs: t,
 	}
@@ -400,7 +420,7 @@ func (r *appTabsRenderer) buildTabButtons(count int) *fyne.Container {
 }
 
 func (r *appTabsRenderer) updateIndicator(animate bool) {
-	if r.appTabs.current < 0 {
+	if r.appTabs.current < 0 || r.appTabs.hideTabs {
 		r.indicator.Hide()
 		return
 	}
